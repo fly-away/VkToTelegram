@@ -4,6 +4,7 @@ import collections
 import logging
 import requests
 import constants
+import sys
 
 logging.basicConfig(filename='vk_to_telegram.log', level=logging.DEBUG)
 logger = logging.getLogger('vk_fetcher')
@@ -29,29 +30,40 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
     logger.debug('_get_wall_posts(%s, %s)', wall, last_fetch_time)
 
     new_posts = []
-    url = constants.VK_PUBLIC_WALL_URL.format(wall, 5) if access_token is None \
-        else constants.VK_PRIVATE_WALL_URL.format(wall, 5, access_token)
+    url = constants.VK_PUBLIC_WALL_URL.format(wall) if access_token is None \
+        else constants.VK_PRIVATE_WALL_URL.format(wall, access_token)
 
     response = requests.get(url)
 
     logger.debug(response.status_code)
     if response.status_code == requests.codes.ok:
-        json_data = response.json()
-
-        if isinstance(json_data, collections.Iterable) and 'response' in json_data:
-            new_posts = map(
-                lambda x: (wall, x['text'], _get_photos(x), _format_post_url(wall, x)),
-                filter(
-                    lambda x: isinstance(x, collections.Iterable) and 'date' in x and x['date'] > last_fetch_time,
-                    json_data['response']
-                )
-            )
-        else:
-            logger.debug("can't get data from '{0}' community".format(wall))
-
+        try:
+            json_data = response.json()
+            items = json_data['response']['items']
+            for i in items:
+                if i['date'] > last_fetch_time:
+                    nopreview = 1
+                    try:
+                        text = i['text']
+                        link = filter(lambda x: x['type'] == 'link', i['attachments'])
+                        link = link[0]['link']
+                        if not text:
+                            nopreview = 0
+                        if ( text.find(link['url']) == -1 ):
+                            text = text + "\n" + link['url']
+                            print('link attached to text: ' + link)
+                    except KeyError, e:
+                        logger.debug ('KeyError "%s"' % str(e))
+                    except Exception as e:
+                        logger.error ("Unexpected error: " + str(e))
+                    new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
+        except KeyError, e:
+            logger.debug ('KeyError "%s"' % str(e))
+        except Exception as e:
+            logger.error ("Unexpected error: " + str(e))
     logger.debug('new posts count : %s', len(new_posts))
 
-    logger.debug(new_posts)
+    #print(new_posts)
     return new_posts
 
 

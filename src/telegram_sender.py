@@ -12,12 +12,9 @@ def send(posts, bot_token, user_ids):
     for post in posts:
         for user_id in user_ids:
             url = constants.TELEGRAM_URL.format(bot_token)
-            response = requests.post(url, data={'chat_id': user_id,
-                                                'text': constants.TELEGRAM_MESSAGE_TEMPLATE.format(
-                                                    post[0], post[1], _get_photos(post[2]), post[3]
-                                                )}
-                                     )
-            logger.debug('Send telegram status code : %s', response.status_code)
+            data={'chat_id': user_id, 'text': constants.TELEGRAM_MESSAGE_TEMPLATE.format(post['text']), 'disable_web_page_preview': post['nopreview']}
+            response = requests.post(url, data=data)
+            logger.debug('Send telegram status code : %s, text: "%s"', response.status_code, response.text)
 
 
 def _get_photos(photo_urls):

@@ -7,6 +7,7 @@ import sys
 import time
 from os.path import realpath
 import constants
+import shelve
 import telegram_sender
 import vk_fetcher
 
@@ -25,6 +26,7 @@ def _read_config(config_file):
 
 
 def main(argv):
+    global storage
     try:
         (opts, args) = getopt.getopt(argv, 'h:')
     except getopt.GetoptError:
@@ -41,17 +43,29 @@ def main(argv):
             sys.exit()
 
     config_file = realpath(args[0])
-    last_fetch_time = 0
+    try:
+        last_fetch_time = storage['last_fetch_time']
+    except:
+        print("last_fetch_time 0")
+    last_fetch_time = 1472213870
+
     while True:
         public_walls, private_walls, bot_token, user_ids, access_token = _read_config(config_file)
 
         fetch_time = time.time()
         posts = vk_fetcher.fetch(public_walls, private_walls, last_fetch_time, access_token)
         last_fetch_time = fetch_time
+        storage['last_fetch_time'] = fetch_time
         if posts:
             telegram_sender.send(posts, bot_token, user_ids)
         time.sleep(constants.SLEEP_TIME)
 
-
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    try:
+        storage = shelve.open('storage.db')
+        main(sys.argv[1:])
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print('Closing storage')
+        storage.close()
