@@ -47,7 +47,7 @@ def main(argv):
         last_fetch_time = storage['last_fetch_time']
     except:
         print("last_fetch_time 0")
-    last_fetch_time = 1472213870
+        last_fetch_time = 1472213870
 
     while True:
         public_walls, private_walls, bot_token, user_ids, access_token = _read_config(config_file)
