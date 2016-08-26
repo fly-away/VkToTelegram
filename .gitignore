@@ -2,3 +2,4 @@ properties.json
 src/*.json
 src/*.log
 src/*.pyc
+src/*.db
