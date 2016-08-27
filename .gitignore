@@ -3,3 +3,4 @@ src/*.json
 src/*.log
 src/*.pyc
 src/*.db
+src/__pycache__

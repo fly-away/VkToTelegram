@@ -6,7 +6,6 @@ import requests
 import constants
 import sys
 
-logging.basicConfig(filename='vk_to_telegram.log', level=logging.DEBUG)
 logger = logging.getLogger('vk_fetcher')
 
 
@@ -45,20 +44,20 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
                     nopreview = 1
                     try:
                         text = i['text']
-                        link = filter(lambda x: x['type'] == 'link', i['attachments'])
-                        link = link[0]['link']
+                        link = next( filter(lambda x: x['type'] == 'link', i['attachments']) )
+                        link = link['link']
                         if not text:
                             nopreview = 0
                         if ( text.find(link['url']) == -1 ):
                             text = text + "\n" + link['url']
                             print('link attached to text: ' + link)
-                    except KeyError, e:
-                        logger.debug ('KeyError "%s"' % str(e))
+                    except KeyError as e:
+                        logger.info ('KeyError "%s"' % str(e))
                     except Exception as e:
                         logger.error ("Unexpected error: " + str(e))
                     new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
-        except KeyError, e:
-            logger.debug ('KeyError "%s"' % str(e))
+        except KeyError as e:
+            logger.info ('KeyError 2 "%s"' % str(e))
         except Exception as e:
             logger.error ("Unexpected error: " + str(e))
     logger.debug('new posts count : %s', len(new_posts))
