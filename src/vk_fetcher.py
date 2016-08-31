@@ -32,10 +32,19 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
     url = constants.VK_PUBLIC_WALL_URL.format(wall) if access_token is None \
         else constants.VK_PRIVATE_WALL_URL.format(wall, access_token)
 
-    response = requests.get(url)
+    ok = False
+    for num in range(1,5):
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            logger.error ("Unexpected error: " + str(e))
+            time.sleep(num)    
+        else:
+            requests_ok = True
+            break
 
     logger.debug(response.status_code)
-    if response.status_code == requests.codes.ok:
+    if requests_ok and response.status_code == requests.codes.ok:
         try:
             json_data = response.json()
             items = json_data['response']['items']

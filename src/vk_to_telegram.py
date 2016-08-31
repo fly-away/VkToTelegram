@@ -27,7 +27,7 @@ def _read_config(config_file):
 
 
 def main(argv):
-    global storage
+    start_time = 1472285178
     try:
         (opts, args) = getopt.getopt(argv, 'h:')
     except getopt.GetoptError:
@@ -57,9 +57,12 @@ def main(argv):
     try:
         last_fetch_time = storage['last_fetch_time']
     except:
-        print("last_fetch_time 0")
-        last_fetch_time = 1472293178
-    #last_fetch_time = 1472293178
+        print("Default start time")
+        last_fetch_time = start_time
+    #last_fetch_time = start_time
+
+    last_fetch_time_human_readable = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(last_fetch_time))
+    print("starting from {}, epoch time {}".format( last_fetch_time_human_readable, last_fetch_time) )
 
     try:
         
