@@ -5,6 +5,7 @@ import logging
 import requests
 import constants
 import sys
+import time
 
 logger = logging.getLogger('vk_fetcher')
 
