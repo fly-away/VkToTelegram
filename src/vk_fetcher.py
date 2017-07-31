@@ -25,7 +25,6 @@ def fetch(public_walls, private_walls, last_fetch_time, access_token):
 
     return posts
 
-
 def _get_wall_posts(wall, last_fetch_time, access_token):
     logger.debug('_get_wall_posts(%s, %s)', wall, last_fetch_time)
 
@@ -33,18 +32,17 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
     url = constants.VK_PUBLIC_WALL_URL.format(wall) if access_token is None \
         else constants.VK_PRIVATE_WALL_URL.format(wall, access_token)
 
-    ok = False
+    requests_ok = False
     for num in range(1,5):
         try:
             response = requests.get(url)
         except Exception as e:
-            logger.error ("Unexpected error: " + str(e))
+            logger.error ("mg Unexpected error: " + str(e))
             time.sleep(num)    
         else:
             requests_ok = True
             break
 
-    logger.debug(response.status_code)
     if requests_ok and response.status_code == requests.codes.ok:
         try:
             json_data = response.json()
@@ -64,12 +62,12 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
                     except KeyError as e:
                         logger.info ('KeyError "%s"' % str(e))
                     except Exception as e:
-                        logger.error ("Unexpected error: " + str(e))
+                        logger.error ("ik Unexpected error: " + str(e))
                     new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
         except KeyError as e:
             logger.info ('KeyError 2 "%s"' % str(e))
         except Exception as e:
-            logger.error ("Unexpected error: " + str(e))
+            logger.error ("nm Unexpected error: " + str(e))
     logger.debug('new posts count : %s', len(new_posts))
 
     #print(new_posts)
