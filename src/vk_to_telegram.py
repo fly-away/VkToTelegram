@@ -18,11 +18,10 @@ def _read_config(config_file):
     config_json = json.loads(open(config_file).read())
 
     public_walls = config_json['public_walls'] if 'public_walls' in config_json else None
-    private_walls = config_json['private_walls'] if 'private_walls' in config_json else None
     bot_token = config_json['telegram_bot_token']
     user_ids = config_json['user_ids']
     access_token = config_json['vk_access_token'] if 'vk_access_token' in config_json else None
-    return public_walls, private_walls, bot_token, user_ids, access_token
+    return public_walls, bot_token, user_ids, access_token
 
 
 def main(argv):
@@ -45,7 +44,7 @@ def main(argv):
     config_file = realpath(args[0])
     
     logfile = config_file.replace('json', 'log')
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%m/%d/%Y %H:%M:%S %Z', filename=logfile, level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%m/%d/%Y %H:%M:%S %Z', filename=logfile, level=logging.WARNING)
     logger = logging.getLogger('vk_to_telegram')
     storagefile = config_file.replace('json', 'last_check')
 
@@ -67,10 +66,10 @@ def main(argv):
 
     try:
         
-        public_walls, private_walls, bot_token, user_ids, access_token = _read_config(config_file)
+        public_walls, bot_token, user_ids, access_token = _read_config(config_file)
         while True:
             fetch_time = int(time.time())
-            posts = vk_fetcher.fetch(public_walls, private_walls, last_fetch_time, access_token)
+            posts = vk_fetcher.fetch(public_walls, last_fetch_time, access_token)
             last_fetch_time = fetch_time
             with open(storagefile, "w") as text_file:
                     text_file.write(str(fetch_time) + "\n")
