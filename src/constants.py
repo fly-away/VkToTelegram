@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-VK_PUBLIC_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=5&v=5.53'
+VK_PUBLIC_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=5&v=5.53&access_token=3baad9e83baad9e83baad9e8033bf2538633baa3baad9e862b5af9b8969f828daea6982'
 
 VK_PRIVATE_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=5&access_token={2}&v=5.53'
 
@@ -15,5 +15,5 @@ TELEGRAM_MESSAGE_TEMPLATE = u'{0}'
 DEBUG_SLEEP_TIME = 5
 '''10 seconds between fetches for debug'''
 
-SLEEP_TIME = 60
+SLEEP_TIME = 300
 '''5 minutes between fetches'''

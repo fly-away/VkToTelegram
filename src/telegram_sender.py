@@ -18,7 +18,7 @@ def send(posts, bot_token, user_ids):
                 if response.status_code != 200:
                     logger.debug('Send telegram status code : %s, text: "%s"', response.status_code, json.loads(response.text))
     except Exception as e:
-        logger.error ("Unexpected error: " + str(e))
+        logger.error ("ts Unexpected error: " + str(e))
 
 def _get_photos(photo_urls):
     if photo_urls:

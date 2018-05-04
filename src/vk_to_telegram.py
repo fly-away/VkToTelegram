@@ -7,7 +7,6 @@ import sys
 import time
 from os.path import realpath
 import constants
-import shelve
 import telegram_sender
 import vk_fetcher
 import logging
@@ -27,7 +26,7 @@ def _read_config(config_file):
 
 
 def main(argv):
-    start_time = 1472285178
+    backlog_time = 3600
     try:
         (opts, args) = getopt.getopt(argv, 'h:')
     except getopt.GetoptError:
@@ -46,41 +45,42 @@ def main(argv):
     config_file = realpath(args[0])
     
     logfile = config_file.replace('json', 'log')
-    logging.basicConfig(filename=logfile, level=logging.DEBUG)
-    storagefile = config_file.replace('json', 'db')
-    try:
-        storage = shelve.open(storagefile)
-    except Exception as e:
-        print ("Failed to open storage: " + str(e))
-        sys.exit(1)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%m/%d/%Y %H:%M:%S %Z', filename=logfile, level=logging.DEBUG)
+    storagefile = config_file.replace('json', 'last_check')
 
     try:
-        last_fetch_time = storage['last_fetch_time']
-    except:
-        print("Default start time")
-        last_fetch_time = start_time
-    #last_fetch_time = start_time
+        with open(storagefile) as f:
+            last_fetch_time = int(f.readline().strip())
+    except Exception as e:
+        logging.error ("Failed to open storage: " + str(e))
+        last_fetch_time = int(time.time()) - backlog_time
+
+    min_last_fetch_time = int(time.time()) - backlog_time
+    if ( last_fetch_time < min_last_fetch_time ):
+        last_fetch_time = min_last_fetch_time
 
     last_fetch_time_human_readable = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(last_fetch_time))
-    print("starting from {}, epoch time {}".format( last_fetch_time_human_readable, last_fetch_time) )
+    logmsg="starting from {}, epoch time {}".format( last_fetch_time_human_readable, last_fetch_time)
+    print(logmsg)
+    logging.info(logmsg)
 
     try:
         
         public_walls, private_walls, bot_token, user_ids, access_token = _read_config(config_file)
         while True:
-            fetch_time = time.time()
+            fetch_time = int(time.time())
             posts = vk_fetcher.fetch(public_walls, private_walls, last_fetch_time, access_token)
             last_fetch_time = fetch_time
-            storage['last_fetch_time'] = fetch_time
+            with open(storagefile, "w") as text_file:
+                    text_file.write(str(fetch_time) + "\n")
+                    text_file.write(time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(fetch_time)))
             if posts:
-                telegram_sender.send(posts, bot_token, user_ids)
+                print (posts)
+                #telegram_sender.send(posts, bot_token, user_ids)
             time.sleep(constants.SLEEP_TIME)
 
     except KeyboardInterrupt:
         pass
-    finally:
-        print('Closing storage')
-        storage.close()
 
 if __name__ == '__main__':
     main(sys.argv[1:])

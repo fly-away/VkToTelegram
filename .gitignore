@@ -2,5 +2,5 @@ properties.json
 src/*.json
 src/*.log
 src/*.pyc
-src/*.db
+src/*.last_check
 src/__pycache__

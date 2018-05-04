@@ -18,10 +18,12 @@ def fetch(public_walls, private_walls, last_fetch_time, access_token):
     if public_walls is not None:
         for wall in public_walls:
             posts.extend(_get_wall_posts(wall, last_fetch_time, None))
+            time.sleep(5)
 
     if private_walls is not None:
         for wall in private_walls:
             posts.extend(_get_wall_posts(wall, last_fetch_time, access_token))
+            time.sleep(5)
 
     return posts
 
@@ -36,6 +38,7 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
     for num in range(1,5):
         try:
             response = requests.get(url)
+            logger.debug('get ' + url)
         except Exception as e:
             logger.error ("mg Unexpected error: " + str(e))
             time.sleep(num)    
@@ -65,9 +68,12 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
                         logger.error ("ik Unexpected error: " + str(e))
                     new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
         except KeyError as e:
-            logger.info ('KeyError 2 "%s"' % str(e))
+            logger.error ('KeyError "%s"' % str(e))
+            logger.error (response.text)
         except Exception as e:
-            logger.error ("nm Unexpected error: " + str(e))
+            logger.error ("Unexpected error: " + str(e))
+            logger.error (response.text)
+            
     logger.debug('new posts count : %s', len(new_posts))
 
     #print(new_posts)
