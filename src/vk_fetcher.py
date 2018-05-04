@@ -18,12 +18,12 @@ def fetch(public_walls, private_walls, last_fetch_time, access_token):
     if public_walls is not None:
         for wall in public_walls:
             posts.extend(_get_wall_posts(wall, last_fetch_time, None))
-            time.sleep(5)
+            time.sleep(1)
 
     if private_walls is not None:
         for wall in private_walls:
             posts.extend(_get_wall_posts(wall, last_fetch_time, access_token))
-            time.sleep(5)
+            time.sleep(1)
 
     return posts
 
@@ -53,20 +53,31 @@ def _get_wall_posts(wall, last_fetch_time, access_token):
             for i in items:
                 if i['date'] > last_fetch_time:
                     nopreview = 1
+                    offer_url = list()
                     try:
-                        text = i['text']
-                        link = next( filter(lambda x: x['type'] == 'link', i['attachments']) )
-                        link = link['link']
-                        if not text:
+                        '''Looking for attached links'''
+                        if 'attachments' in i:
+                            offer_url = list( x['link']['url'] for x in i['attachments'] if x['type'] == 'link')
+
+                            #link_attachment = next( filter(lambda x: x['type'] == 'link', i['attachments']) )
+                        '''Checking if post has body'''
+                        if 'text' in i:
+                            text = i['text']
+                            if (offer_url and text.find(offer_url[0]) == -1 ):
+                                text = text + "\n" + offer_url[0]
+                                logger.warning('link attached to text: ' + offer_url[0])
+                        else:
                             nopreview = 0
-                        if ( text.find(link['url']) == -1 ):
-                            text = text + "\n" + link['url']
-                            print('link attached to text: ' + link)
+                        if ( text.find('http') != -1 ):
+                            new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
                     except KeyError as e:
-                        logger.info ('KeyError "%s"' % str(e))
+                        logger.warning ('KeyError "%s"' % str(e))
+                        logger.warning (response.text)
                     except Exception as e:
-                        logger.error ("ik Unexpected error: " + str(e))
-                    new_posts.append({'wall': wall, 'text': text, 'nopreview': nopreview})
+                        logger.error ("Unexpected error: " + str(e))
+                        logger.error (i)
+                        logger.exception('Got exception on main handler')
+
         except KeyError as e:
             logger.error ('KeyError "%s"' % str(e))
             logger.error (response.text)

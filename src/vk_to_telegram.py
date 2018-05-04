@@ -26,7 +26,7 @@ def _read_config(config_file):
 
 
 def main(argv):
-    backlog_time = 3600
+    backlog_time = 86000
     try:
         (opts, args) = getopt.getopt(argv, 'h:')
     except getopt.GetoptError:
@@ -45,24 +45,25 @@ def main(argv):
     config_file = realpath(args[0])
     
     logfile = config_file.replace('json', 'log')
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%m/%d/%Y %H:%M:%S %Z', filename=logfile, level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%m/%d/%Y %H:%M:%S %Z', filename=logfile, level=logging.INFO)
+    logger = logging.getLogger('vk_to_telegram')
     storagefile = config_file.replace('json', 'last_check')
 
     try:
         with open(storagefile) as f:
             last_fetch_time = int(f.readline().strip())
     except Exception as e:
-        logging.error ("Failed to open storage: " + str(e))
+        logger.error ("Failed to open storage: " + str(e))
         last_fetch_time = int(time.time()) - backlog_time
 
     min_last_fetch_time = int(time.time()) - backlog_time
     if ( last_fetch_time < min_last_fetch_time ):
         last_fetch_time = min_last_fetch_time
 
-    last_fetch_time_human_readable = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(last_fetch_time))
+    last_fetch_time_human_readable = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(last_fetch_time))
     logmsg="starting from {}, epoch time {}".format( last_fetch_time_human_readable, last_fetch_time)
     print(logmsg)
-    logging.info(logmsg)
+    logger.warning(logmsg)
 
     try:
         
@@ -73,10 +74,10 @@ def main(argv):
             last_fetch_time = fetch_time
             with open(storagefile, "w") as text_file:
                     text_file.write(str(fetch_time) + "\n")
-                    text_file.write(time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(fetch_time)))
+                    text_file.write(time.strftime("%Y-%m-%d %H:%M:%S %Z\n", time.localtime(fetch_time)))
             if posts:
-                print (posts)
-                #telegram_sender.send(posts, bot_token, user_ids)
+                #print (posts)
+                telegram_sender.send(posts, bot_token, user_ids)
             time.sleep(constants.SLEEP_TIME)
 
     except KeyboardInterrupt:

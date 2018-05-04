@@ -2,9 +2,9 @@
 
 from __future__ import unicode_literals
 
-VK_PUBLIC_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=5&v=5.53&access_token=3baad9e83baad9e83baad9e8033bf2538633baa3baad9e862b5af9b8969f828daea6982'
+VK_PUBLIC_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=10&v=5.53&access_token=4a53b9544a53b9544a53b9546b4a310f4144a534a53b95410bfd115ea469a861df8c613'
 
-VK_PRIVATE_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=5&access_token={2}&v=5.53'
+VK_PRIVATE_WALL_URL = 'https://api.vk.com/method/wall.get?domain={0}&count=10&access_token={2}&v=5.53'
 
 VK_POST_URL = 'https://vk.com/{0}?w=wall{1}_{2}'
 
